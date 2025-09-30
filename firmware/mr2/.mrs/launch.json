@@ -5,7 +5,7 @@
 			"type": "mrs-debugger",
 			"request": "launch",
 			"name": "X033F8P6_CDC_UART_SPI_I2C_Converter3",
-			"cwd": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3",
+			"cwd": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3\\firmware\\mr2",
 			"openOCDCfg": {
 				"useLocalOpenOCD": true,
 				"executable": "y:/WI/MounRiver_Studio2/resources/app/resources/win32/components/WCH/OpenOCD/OpenOCD/bin/openocd.exe",
@@ -39,8 +39,8 @@
 					"additionalCommands": []
 				},
 				"loadedFiles": {
-					"executableFile": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3\\obj\\X033F8P6_CDC_UART_SPI_I2C_Converter3.elf",
-					"symbolFile": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3\\obj\\X033F8P6_CDC_UART_SPI_I2C_Converter3.elf",
+					"executableFile": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3\\firmware\\mr2\\obj\\X033F8P6_CDC_UART_SPI_I2C_Converter3.elf",
+					"symbolFile": "y:\\WI\\CH32\\X033\\F8P6\\X033F8P6_CDC_UART_SPI_I2C_Converter3\\firmware\\mr2\\obj\\X033F8P6_CDC_UART_SPI_I2C_Converter3.elf",
 					"executableFileOffset": 0,
 					"symbolFileOffset": 0
 				},

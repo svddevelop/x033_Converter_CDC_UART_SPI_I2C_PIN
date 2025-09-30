@@ -84,16 +84,23 @@ int main(void) {
 
 
   // Setup
-  PIN_output(PIN_LED);                            // set LED pin to output
+  //PIN_output(PIN_LED);                            // set LED pin to output
   
   CDC_init();
-  //UART2_init();
-  //UART4_init();
 
   //**************************************************************
 
+    cfg_init(&global_conf);
+    configuration_t *loc = &global_conf;
+    FLASH_Unlock();
+    read_struct_from_flash((char*)loc, sizeof(configuration_t));
+    
+    uint8_t crc = //crc8((uint8_t*)(loc+1), sizeof(configuration_t)-1);
+                    calc_cfg_crc(loc);
+    if ( crc != global_conf.crc)
+        cfg_init(loc);
 
-    read_struct_from_flash((char*)&global_conf, sizeof(global_conf));
+    activate_cfg(loc);
 
   //**************************************************************
 
@@ -101,8 +108,6 @@ int main(void) {
   while(1) {
     //PIN_toggle(PIN_LED);                          // toggle LED
     //DLY_ms(1);                                      // wait a bit
-
-    //DLY_ms(ud2.boot_count);
 
     int count = CDC_available();
     if (count ){

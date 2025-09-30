@@ -37,9 +37,9 @@
 				"name": "eeprom.c"
 			},
 			{
-				"name": "eeprom.h",
 				"parentLogicPath": "User",
-				"type": "file"
+				"type": "file",
+				"name": "eeprom.h"
 			}
 		],
 		"projectName": "X033F8P6_CDC_UART_SPI_I2C_Converter3",
@@ -138,7 +138,7 @@
 						"do_not_search_system_directories": false,
 						"preprocess_only": false,
 						"defined_symbols": [
-							"FCPU=48000000"
+							"F_CPU=48000000"
 						],
 						"undefined_symbols": []
 					},

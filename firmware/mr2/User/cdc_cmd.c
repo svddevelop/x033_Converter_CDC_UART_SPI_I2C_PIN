@@ -5,6 +5,8 @@
 //#include <strings.h>
 #include "usb_cdc.h"
 #include "uart/uart.h"
+#include "i2c/i2c_soft.h"
+#include "spi/spi.h"
 #include "flash_userdata.h"
 
 __code char c_cmd_save[] =              "SAVE";
@@ -24,11 +26,17 @@ __code char c_dev_i2c[] =               "I2C";
 __code char c_dev_pin[] =               "PIN";
 __code char c_dev_cdc[] =               "CDC";
 __code char c_par_baud[] =              ".BAUD";
+__code char c_par_presc[] =             ".PRESC";
+__code char c_par_cpol[] =              ".CPOL";
+__code char c_par_cpha[] =              ".CPHA";
 __code char c_par_en[] =                ".EN";
 __code char c_par_dis[] =               ".DIS";
+__code char c_par_master[] =            ".MASTER";
 __code char c_rnt_active[] =            ":\r\n\tactive:";
 __code char c_rnt[]    =                "\r\n\t";
 __code char c_rn[]    =                 "\r\n";
+__code char c_eq[]    =                 " = ";
+__code char c_msg_readflash[] =         "Read flash\r\n";
 
 __code char c_msg_help1[] =             "help message;\r\nver 1.1\r\n"
                                         "\t-helpuart\t- shows information about setup of uart;\r\n"
@@ -55,26 +63,85 @@ __code char c_msg_helpuart[] =
 __code char c_msg_helpspi[] =
                                         "\t[SET:<dev>.<param>=<value>]\r\n"
                                         "\t\t<dev> - device from these list: UART, SPI, I2C, CDC, PIN.\r\n"
-                                        "\t\t\tparameter for device UART:\r\n"
-                                        "\t\t\t\tBAUD with numerec value(default is 115200)\r\n"
-                                        "\r\n[SET:SPI.SPEED=9600]\t- set up baud 9600\r\n"
-                                        "\r\n[SET:SPI.EN]\t- enable UART, disable pins\r\n"
-                                        "\r\n[SET:SPI.DIS]\t- disable UART, enable pins\r\n"
+                                        //"\t\t\tparameter for device UART:\r\n"
+                                        //"\t\t\t\tBAUD with numerec value(default is 115200)\r\n"
+                                        "\r\n[SET:SPI.MASTER=<char val>]\t- set up the mode of SPI (0 or 1); \r\n"
+                                        "\r\n[SET:SPI.PRESC=<char val>]\t- prescaller for CLOCK_RATE = 48000000 / (2 << PRESC);\r\n"
+                                        "\r\n[SET:SPI.BAUD=<char val>]\t- set up speed with value: \r\n"
+                                        "\r\n\t\t\t- 0 - CLOCK_RATE /2 ;\r\n"
+                                        "\r\n\t\t\t- 1 - CLOCK_RATE /4 ;\r\n"
+                                        "\r\n\t\t\t- 2 - CLOCK_RATE /8 ;\r\n"
+                                        "\r\n\t\t\t- 3 - CLOCK_RATE /16 ;\r\n"
+                                        "\r\n\t\t\t- 4 - CLOCK_RATE /32 ;\r\n"
+                                        "\r\n\t\t\t- 5 - CLOCK_RATE /64 ;\r\n"
+                                        "\r\n\t\t\t- 6 - CLOCK_RATE /128 ;\r\n"
+                                        "\r\n\t\t\t- 7 - CLOCK_RATE /256 ;\r\n"
+                                        "\r\n[SET:SPI.CPOL=<char val>]\t- set up the clock polarity (0 or 1); \r\n"
+                                        "\r\n[SET:SPI.CPHA=<char val>]\t- set up the clock phase (0 or 1); \r\n"
+                                        "\r\n[SET:SPI.EN]\t- enable SPI, disable pins;\r\n"
+                                        "\r\n[SET:SPI.DIS]\t- disable SPI, enable pins;\r\n"
                                         " -o-o-o-o---o-o-o-o- \r\n"
                                         "|\t\t    |\r\n"
-                                        "]\t#\t    |\r\n"
+                                        "]\t\t#  |\r\n"
                                         "|\t\t    |\r\n"
-                                        " _+_o_o_-___o_o_o_o_ \r\n"
+                                        " -+-D-C-----o-o-o-o- \r\n"
+                                        ;
+__code char c_msg_helpi2c[] =
+                                        "\t[SET:<dev>.<param>=<value>]\r\n"
+                                        "\t\t<dev> - device from these list: UART, SPI, I2C, CDC, PIN.\r\n"
+                                        //"\t\t\tparameter for device UART:\r\n"
+                                        //"\t\t\t\tBAUD with numerec value(default is 115200)\r\n"
+                                        //"\r\n[SET:SPI.SPEED=2000000]\t- set up baud 9600\r\n"
+                                        "\r\n[SET:I2C.EN]\t- enable I2C, disable pins\r\n"
+                                        "\r\n[SET:I2C.DIS]\t- disable I2C, enable pins\r\n"
+                                        " -o-o-o-o---o-o-o-o- \r\n"
+                                        "|\t\t    |\r\n"
+                                        "]\t\t#  |\r\n"
+                                        "|\t\t    |\r\n"
+                                         " -o-o-o-o---o-o-o-o- \r\n"
                                         ;
 __code char c_msg_help2[] =
                                         ""
                                         ;
 
+__code char c_msg_spibaseclock[]        = "Base SPI clock: ";                                        
+__code char c_msg_spi_hz[]              = " Hz\n";                                        
+__code char c_msg_spispeed[]            = "SPI speed: ";                                        
+
+
+inline __attribute__((always_inline)) void calculate_spi_speeds(configuration_t* a_conf) {
+
+    uint32_t f_cpu = F_CPU; // 48 MHz
+    uint8_t spi_presc = a_conf->cfg_spi.prescaller;
+    
+    uint32_t base_clock = f_cpu / (2 << spi_presc); //§¢§Ñ§Ù§à§Ó§Ñ§ñ §é§Ñ§ã§ä§à§ä§Ñ
+    CDC_writeString(c_msg_spibaseclock);
+    CDC_writeDec(base_clock);
+    CDC_writeLine(c_msg_spi_hz);
+    CDC_writeString(c_msg_spispeed);
+    CDC_writeDec(base_clock / a_conf->cfg_spi.baud);
+    CDC_writeLine(c_msg_spi_hz);
+
+}                                        
+
+
+void print_conf_hex(configuration_t * a_conf){
+
+    char* c_buf = (char*)a_conf; 
+    for(int i=0; i<sizeof(configuration_t); i++){
+                //printf("adr-%08x v-%08x\r\n", Fadr +4*i, *(u32*)(Fadr +4*i));
+        CDC_writeHex(c_buf[i], 2);
+    }
+    CDC_writeLine(c_rn);
+}
 
 #define _SIOZEOFMSG(x)      (sizeof(x)-1)
 #define _MEMCMP(x)          memcmp(a_buf,x,_SIOZEOFMSG(x))
 
 inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_t* a_conf){
+
+
+    char *dev, *par;
 
     char* eoc = strstr(a_buf, c_cmd_sh_r); //end of command
     if ( eoc != NULL ){
@@ -84,28 +151,32 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
             //*cmd_set = 32;
 
-            char* dev_uart = strstr(a_buf, c_dev_uart) ;
-            if (dev_uart != NULL){
+            //////////////////////////////   UART    ///////////////////////////
+
+            dev = strstr(a_buf, c_dev_uart) ;
+            if (dev != NULL){
 
                 //a_buf[dev_uart] = 32;
 
-                char* par_baud = strstr(a_buf, c_par_baud);
-                if (par_baud != NULL){
+                par = strstr(a_buf, c_par_baud);
+                if (par != NULL){
 
                     //a_buf[par_baud] = 32;
 
                     uint32_t baud = a_conf->cfg_uart.baud;
-                    if (sscanf(&par_baud[5], c_val_dec, &baud) >= 0){
+                    if (sscanf(&par[5], c_val_dec, &baud) >= 0){
                         a_conf->cfg_uart.baud = baud;
                         UART2_init(a_conf->cfg_uart.baud = baud);
                         a_buf[0] = 0;
                         return true;
                     }
+                    return true;
                 }
-                char* par = strstr(a_buf, c_par_en);
+                par = strstr(a_buf, c_par_en);
                 if (par != NULL){
  
                         //a_buf[par] = 32;
+                        a_conf->active_interfaces.uart = 1;
 
                         UART2_enable();
                         a_buf[0] = 0;
@@ -115,6 +186,7 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
                 if (par != NULL ){
  
                         //a_buf[par] = 32;
+                        a_conf->active_interfaces.uart = 0;
 
                         UART2_disable();
                         a_buf[0] = 0;
@@ -123,17 +195,198 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
                 return true;
 
-            }//if (dev_uart >= 0)
+            }//if (dev != NULL)  c_dev_uart
+
+            dev = strstr(a_buf, c_dev_i2c) ;
+            if (dev != NULL){
+
+                par = strstr(a_buf, c_par_baud);
+                if (par != NULL){
+
+                    //a_buf[par_baud] = 32;
+
+                    uint32_t baud = a_conf->cfg_uart.baud;
+                    if (sscanf(&par[5], c_val_dec, &baud) >= 0){
+                        //a_conf->cfg_uart.baud = baud;
+                        
+                        UART2_init(a_conf->cfg_uart.baud = baud);
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+
+                //*************************************************************************
+
+                //////////////////////////  I2C  ////////////////////////////////////
+
+                par = strstr(a_buf, c_par_en);
+                if (par != NULL){
+ 
+                        //a_buf[par] = 32;
+                        a_conf->active_interfaces.i2c = 1;
+
+                        //UART2_enable();
+                        //it must be  I2C
+                        a_buf[0]    = 0;
+                        par[0]      = 0;
+                        return true;
+                }
+                par = strstr(a_buf, c_par_dis);
+                if (par != NULL ){
+ 
+                        //a_buf[par] = 32;
+                        a_conf->active_interfaces.i2c = 0;
+
+                        //UART2_disable();
+                        //it must be  I2C
+                        a_buf[0]    = 0;
+                        par[0]      = 0;
+                        return true;
+                }
+
+                return true;
+            }//if (dev != NULL)  c_dev_i2c
+
+            //********************************************************************
+
+            ///////////////////////   SPI ////////////////////////////////////////
+
+            dev = strstr(a_buf, c_dev_spi) ;
+            if (dev != NULL){
+
+                int val = 0;
+
+                par = strstr(a_buf, c_par_baud);
+                if (par != NULL){
+
+                    val = a_conf->cfg_spi.baud;
+                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
+                        if ((val >= 0) & (val <= 7)){
+
+                            a_conf->cfg_spi.baud = val;
+                            SPI_setBAUD(a_conf->cfg_spi.baud = val);
+
+                        }
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+               par = strstr(a_buf, c_par_presc);
+                if (par != NULL){
+
+                    val = a_conf->cfg_spi.prescaller;
+                    if (sscanf(&par[6], c_val_dec, &val) >= 0){
+                        if ((val >= 0) & (val <= 7)){
+
+                            a_conf->cfg_spi.prescaller = val;
+                            activate_cfg(a_conf); 
+
+                        }
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+                par = strstr(a_buf, c_par_master);
+                if (par != NULL){
+
+                    val = a_conf->cfg_spi.master;
+                    if (sscanf(&par[7], c_val_dec, &val) >= 0){
+
+                        if ((val == 0) )
+                            a_conf->cfg_spi.master = 0;
+                        else 
+                          a_conf->cfg_spi.master = 1;
+
+                        activate_cfg(a_conf);                            
+                        
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+                par = strstr(a_buf, c_par_cpol);
+                if (par != NULL){
+
+                    val = a_conf->cfg_spi.pol;
+                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
+
+                        if ((val == 0) )
+                            a_conf->cfg_spi.pol = 0;
+                        else 
+                          a_conf->cfg_spi.pol = 1;
+
+                        activate_cfg(a_conf);                            
+                        
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+                par = strstr(a_buf, c_par_cpha);
+                if (par != NULL){
+
+                    val = a_conf->cfg_spi.pha;
+                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
+
+                        if ((val == 0) )
+                            a_conf->cfg_spi.pha = 0;
+                        else 
+                          a_conf->cfg_spi.pha = 1;
+
+                        activate_cfg(a_conf);                            
+                        
+                        a_buf[0] = 0;
+                        return true;
+                    }
+                    return true;
+                }
+               
+
+
+                par = strstr(a_buf, c_par_en);
+                if (par != NULL){
+ 
+                        //a_buf[par] = 32;
+                        a_conf->active_interfaces.spi = 1;
+
+                        SPI_enable();
+
+                        a_buf[0]    = 0;
+                        par[0]      = 0;
+                        return true;
+                }
+                par = strstr(a_buf, c_par_dis);
+                if (par != NULL ){
+ 
+                        //a_buf[par] = 32;
+                        a_conf->active_interfaces.spi = 0;
+
+                        SPI_disable();
+
+                        a_buf[0]    = 0;
+                        par[0]      = 0;
+                        return true;
+                }
+
+                return true;
+            }//if (dev != NULL)  c_dev_spi
+
+
+            //*****************************************************************
 
             return true;
-        }//if ( cmd_set >= 0 )
+        }//if ( cmd_set >= 0 )  
 
         char* cmd_save = strstr(a_buf, c_cmd_save);
         if ( cmd_save != NULL ){
 
             //a_buf[cmd_save] = 32;
 
-            a_conf->crc = crc8((uint8_t*)(a_conf+1), sizeof(configuration_t)-1);
+            a_conf->crc = //crc8((uint8_t*)(a_conf+1), sizeof(configuration_t)-1);
+                            calc_cfg_crc(a_conf);
 
             int8_t r = write_struct_to_flash((char*)a_conf, sizeof(configuration_t));
             if ( r < 0){
@@ -153,19 +406,22 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
             read_struct_from_flash((char*)a_conf, sizeof(configuration_t));
 
-            CDC_writeString("Read flash\r\n");
-            uint8_t i = 0;
-            char* c_buf = (char*)a_conf; 
-            for(i=0; i<sizeof(configuration_t); i++){
-                //printf("adr-%08x v-%08x\r\n", Fadr +4*i, *(u32*)(Fadr +4*i));
-                CDC_writeHex(c_buf[i], 2);
-            }
-            CDC_writeLine(c_rn);
+            CDC_writeString(c_msg_readflash);
+
+            print_conf_hex(a_conf);
 
             return true;
 
         }// if ( cmd_save >= 0 )
 
+        char* cmd_cfghex = strstr(a_buf, "CFGHEX");
+        if ( cmd_cfghex != NULL ){
+            
+            print_conf_hex(a_conf);
+
+            return true;
+
+        }// if ( cmd_cfghex >= 0 )
 
         char* cmd_print = strstr(a_buf, c_cmd_print);
         if ( cmd_print != NULL){
@@ -177,16 +433,40 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             CDC_writeString(a_conf->active_interfaces.uart ? c_par_en : c_par_dis);
             CDC_writeString(c_rnt);
             CDC_writeString(c_par_baud);
-            CDC_writeString(":");
+            CDC_writeString(c_eq);
             CDC_writeDec(a_conf->cfg_uart.baud);
             CDC_writeString(c_rn);
             CDC_writeString(c_dev_spi);
             CDC_writeString(c_rnt_active);
             CDC_writeString(a_conf->active_interfaces.spi ? c_par_en : c_par_dis);
-            CDC_writeString(c_rnt);
 
+            CDC_writeString(c_rnt);
+            CDC_writeString(c_par_master);
+            CDC_writeString(c_eq);
+            CDC_writeDec(a_conf->cfg_spi.master);
+
+            CDC_writeString(c_rnt);
+            CDC_writeString(c_par_cpha);
+            CDC_writeString(c_eq);
+            CDC_writeDec(a_conf->cfg_spi.pha);
+
+            CDC_writeString(c_rnt);
+            CDC_writeString(c_par_cpol);
+            CDC_writeString(c_eq);
+            CDC_writeDec(a_conf->cfg_spi.pol);
+
+            CDC_writeString(c_rnt);
+            CDC_writeString(c_par_baud);
+            CDC_writeString(c_eq);
+            CDC_writeDec(a_conf->cfg_spi.baud);
+ 
+            CDC_writeString(c_rnt);
+            CDC_writeString(c_par_presc);
+            CDC_writeString(c_eq);
+            CDC_writeDec(a_conf->cfg_spi.prescaller);
             CDC_writeString(c_rn);
-            return true;
+            calculate_spi_speeds(a_conf);
+           return true;
         }
 
         char* helpptr = strstr(a_buf, c_cmd_helpuart);

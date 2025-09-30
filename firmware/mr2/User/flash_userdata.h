@@ -110,6 +110,8 @@ typedef enum
 
 FLASH_Status FLASH_WaitForLastOperation(uint32_t Timeout);
 FLASH_Status FLASH_ROM_ERASE(uint32_t StartAddr, uint32_t Length);
+void FLASH_Unlock_Fast(void);
+void FLASH_Unlock(void);
 
 uint8_t crc8(const uint8_t *data, uint16_t length); 
 
