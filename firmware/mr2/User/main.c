@@ -92,7 +92,7 @@ int main(void) {
 
     cfg_init(&global_conf);
     configuration_t *loc = &global_conf;
-    FLASH_Unlock();
+    FLASH_Lock();
     read_struct_from_flash((char*)loc, sizeof(configuration_t));
     
     uint8_t crc = //crc8((uint8_t*)(loc+1), sizeof(configuration_t)-1);

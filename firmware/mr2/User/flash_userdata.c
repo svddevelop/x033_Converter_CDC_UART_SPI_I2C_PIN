@@ -623,6 +623,7 @@ FLASH_Status FLASH_UserOptionByteConfig(uint8_t OB_IWDG, uint8_t OB_STOP, uint8_
 
 // CRC-8 calculation (standard polynomial 0x07)
 uint8_t crc8(const uint8_t *data, uint16_t length) {
+    
     uint8_t crc = 0x00;
     uint8_t polynomial = 0x07;  // x^8 + x^2 + x + 1
     
