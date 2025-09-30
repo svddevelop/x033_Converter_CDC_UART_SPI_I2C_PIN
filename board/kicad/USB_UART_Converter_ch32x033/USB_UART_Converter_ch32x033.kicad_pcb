@@ -466,6 +466,7 @@
 		(property "Value" "PRG"
 			(at -2.54 5.65 0)
 			(layer "F.Fab")
+			(hide yes)
 			(uuid "d6fb6ea8-60d4-4112-84bc-e2a1b63b3ad2")
 			(effects
 				(font
@@ -3184,7 +3185,7 @@
 		(uuid "fdd1e435-f3bc-4c52-8e1b-735cd43462ec")
 	)
 	(gr_line
-		(start 191.48 97.01)
+		(start 134.495948 96.835652)
 		(end 109.77 96.76)
 		(stroke
 			(width 0.05)
@@ -3194,8 +3195,8 @@
 		(uuid "5a500eb7-e284-40e2-8c6e-c4570518007c")
 	)
 	(gr_line
-		(start 109.77 39.28)
-		(end 191.73 39.28)
+		(start 109.9 76.9)
+		(end 134.7 76.8)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -3204,8 +3205,8 @@
 		(uuid "845a0e75-9014-4bd8-a018-5045b329962a")
 	)
 	(gr_line
-		(start 191.73 39.28)
-		(end 191.48 97.01)
+		(start 134.7 76.8)
+		(end 134.495948 96.835688)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -3215,7 +3216,7 @@
 	)
 	(gr_line
 		(start 109.77 96.76)
-		(end 109.77 39.28)
+		(end 109.9 76.9)
 		(stroke
 			(width 0.05)
 			(type default)
@@ -3224,7 +3225,7 @@
 		(uuid "e2ef72a8-41cb-4552-aa0c-63208908b6b7")
 	)
 	(gr_text "SPI"
-		(at 127.2 81 0)
+		(at 127.3 81.5 0)
 		(layer "F.SilkS")
 		(uuid "41dd9fa4-01e3-4fc0-b200-b1bbd8b8e901")
 		(effects
@@ -3237,7 +3238,7 @@
 		)
 	)
 	(gr_text "I2C"
-		(at 127.7 92.8 0)
+		(at 127.6 92.5 0)
 		(layer "F.SilkS")
 		(uuid "839d552c-850d-4d7f-b364-eeea38b52e2a")
 		(effects
