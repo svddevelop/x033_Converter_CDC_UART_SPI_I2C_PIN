@@ -54,15 +54,15 @@
 
 
 #include "system.h"                               // system functions
-#include "gpio.h"                                 // GPIO functions
-#include "usb_cdc.h"
+#include "gpio/gpio.h"                                 // GPIO functions
+#include "USB/usb_cdc.h"
 #include "uart/uart.h"
 
-#include "flash_userdata.h"
-#include "print.h"
+#include "flash/flash_userdata.h"
+#include "sys/print.h"
 #include <stdlib.h>
-#include "dev_config.h"
-#include "cdc_cmd.h"
+#include "flash/dev_config.h"
+#include "cmd/cdc_cmd.h"
 
 
 #define PIN_LED PB1                               // define LED pin

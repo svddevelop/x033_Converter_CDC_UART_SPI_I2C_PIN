@@ -32,7 +32,7 @@ extern "C" {
 
 #include "config.h"
 #include "system.h"
-#include "gpio.h"
+#include "gpio/gpio.h"
 
 // I2C parameters
 #ifndef PIN_SDA

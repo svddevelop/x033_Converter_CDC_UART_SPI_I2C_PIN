@@ -7,7 +7,7 @@
 #include "uart/uart.h"
 #include "i2c/i2c_soft.h"
 #include "spi/spi.h"
-#include "flash_userdata.h"
+#include "flash/flash_userdata.h"
 
 __code char c_cmd_save[] =              "SAVE";
 __code char c_cmd_load[] =              "LOAD";

@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
-#include "dev_config.h"
+#include "flash/dev_config.h"
 
 #ifndef __code
 #define __code const __attribute__((section(".rodata")))
