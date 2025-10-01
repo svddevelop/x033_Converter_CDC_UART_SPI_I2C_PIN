@@ -4,6 +4,9 @@ Using CDC (USB) connection you can
 
 programmatically control interfaces
 
+![](img/CDC_UART_SPI_I2C_Convertor3_top.JPG){width=300}	![](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG){width=300}	
+
+
 ## Current commands
 When the device is connected via USB, by connecting a terminal, you can get help on using the control commands. At the end of each command there must be a CR (0x0D) symbol.
 
@@ -29,4 +32,13 @@ activates the UART interface.
 ##### [SET:UART.BAUD=<int value>]
 Sets the communication speed for the UART interface. <int value> must be a value from 1200 to 2500000 baud per second.
 Example: [SET:UART.BAUD=57600] - sets the communication speed to 57600.
+
+
+![](img/cfg-help.JPG){width=300} ![](img/cfg-helpuart.JPG){width=300}
+![](img/cfg-helpi2c.JPG){width=300}
+![](img/cfg-helpspi.JPG){width=300} ![](img/cfg-uartbaud-save.JPG){width=300}
+
+
+
+
 
