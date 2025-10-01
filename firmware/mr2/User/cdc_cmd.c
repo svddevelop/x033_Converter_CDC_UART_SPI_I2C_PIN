@@ -207,9 +207,10 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
                     uint32_t baud = a_conf->cfg_uart.baud;
                     if (sscanf(&par[5], c_val_dec, &baud) >= 0){
-                        //a_conf->cfg_uart.baud = baud;
+
+                        a_conf->cfg_uart.baud = baud;
                         
-                        UART2_init(a_conf->cfg_uart.baud = baud);
+                        UART2_init( baud);
                         a_buf[0] = 0;
                         return true;
                     }
@@ -385,8 +386,7 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
             //a_buf[cmd_save] = 32;
 
-            a_conf->crc = //crc8((uint8_t*)(a_conf+1), sizeof(configuration_t)-1);
-                            calc_cfg_crc(a_conf);
+            a_conf->crc = calc_cfg_crc(a_conf);
 
             int8_t r = write_struct_to_flash((char*)a_conf, sizeof(configuration_t));
             if ( r < 0){

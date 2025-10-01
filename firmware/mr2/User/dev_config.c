@@ -91,7 +91,7 @@ inline __attribute__((always_inline)) void  activate_cfg(configuration_t * a_con
 
 /*inline __attribute__((always_inline))*/ uint8_t  calc_cfg_crc(configuration_t * a_conf){
 
-    uint8_t *buf = a_conf;
+    uint8_t *buf = (uint8_t *)a_conf;
     buf += 1;
     uint8_t crc = crc8( buf, sizeof(configuration_t)-1);
     return crc;

@@ -691,6 +691,7 @@ int8_t write_struct_to_flash(char * a_struct, size_t a_size){
         return -2;
     }
 
+    return 0;
 
 }
 
