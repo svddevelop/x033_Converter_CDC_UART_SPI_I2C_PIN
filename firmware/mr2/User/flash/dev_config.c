@@ -53,6 +53,19 @@ inline __attribute__((always_inline)) void  cfg_init(configuration_t * a_conf){
     cfg_uart_init( &a_conf->cfg_uart );
     cfg_spi_init( &a_conf->cfg_spi );
 
+    a_conf->trans.cdc_i2c               = 0;
+    a_conf->trans.cdc_spi               = 0;
+    a_conf->trans.cdc_uart              = 0;
+    a_conf->trans.uart_cdc              = 0;
+    a_conf->trans.uart_i2c              = 0;
+    a_conf->trans.uart_spi              = 0;
+    a_conf->trans.spi_uart              = 0;
+    a_conf->trans.spi_cdc               = 0;
+    a_conf->trans.spi_i2c               = 0;
+    a_conf->trans.i2c_cdc               = 0;
+    a_conf->trans.i2c_spi               = 0;
+    a_conf->trans.i2c_uart              = 0;
+
     a_conf->crc = calc_cfg_crc(a_conf);
     
 }

@@ -8,10 +8,13 @@
 #include "i2c/i2c_soft.h"
 #include "spi/spi.h"
 #include "flash/flash_userdata.h"
+#include "buildvers.h"
 
 __code char c_cmd_save[] =              "SAVE";
 __code char c_cmd_load[] =              "LOAD";
+__code char c_cmd_trns[] =              "TRN";
 __code char c_cmd_sh_r[] =              "\r";
+__code char c_cmd_cfghex[] =            "CFGHEX";
 __code char c_val_dec[] =               "=%d";
 __code char c_cmd_print[] =             "-print";
 __code char c_cmd_help[] =              "-help";
@@ -37,12 +40,17 @@ __code char c_rnt[]    =                "\r\n\t";
 __code char c_rn[]    =                 "\r\n";
 __code char c_eq[]    =                 " = ";
 __code char c_msg_readflash[] =         "Read flash\r\n";
+__code char c_msg_ver[] =               "ver: ";
+__code char c_msg_fromto[] =            " > ";
+
 
 __code char c_msg_help1[] =             "help message;\r\nver 1.1\r\n"
                                         "\t-helpuart\t- shows information about setup of uart;\r\n"
                                         "\t-helpspi\t- shows information about spi;\r\n"
                                         "\t-helpi2c\t\t- how to setup i2c;\r\n"
                                         "\t-helppin\t- how to control pins;\r\n"
+                                        "\t[TRN:<dev src>-<dev dst>.EN/DIS]\t- transwer between interfaces where <dev src> and <dev dst> is:\r\n"
+                                        "\t\tCDC, UART, SPI or I2C;\r\n"
                                         "\t[SAVE]\t- save current confuguration to a flash memory;\r\n"
                                         "\t[LOAD]\t- load confuguration from a flash memory.\r\n"
                                         ;
@@ -146,8 +154,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
     char* eoc = strstr(a_buf, c_cmd_sh_r); //end of command
     if ( eoc != NULL ){
 
-        char* cmd_set = strstr(a_buf, c_cmd_set);
-        if ( cmd_set != NULL ){
+        char* cmd = strstr(a_buf, c_cmd_set);
+        if ( cmd != NULL ){
 
             //*cmd_set = 32;
 
@@ -381,8 +389,97 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             return true;
         }//if ( cmd_set >= 0 )  
 
-        char* cmd_save = strstr(a_buf, c_cmd_save);
-        if ( cmd_save != NULL ){
+
+        cmd = strstr(a_buf, c_cmd_trns);
+        if ( cmd != NULL ){
+
+            char * devCDC  = strstr(a_buf, c_dev_cdc)
+               , * devUART = strstr(a_buf, c_dev_uart)
+               , * devSPI  = strstr(a_buf, c_dev_spi)
+               , * devI2C  = strstr(a_buf, c_dev_i2c)
+               , * tEn     = strstr(a_buf, c_par_en) 
+               , * tDis    = strstr(a_buf, c_par_dis) 
+               ; 
+
+            // CDC ->>
+            if (( devCDC != NULL ) && ( devUART != NULL )){
+
+                if(devCDC < devUART ){
+                  if (tEn  != NULL) a_conf->trans.cdc_uart = 1;
+                  if (tDis != NULL) a_conf->trans.cdc_uart = 0;
+                }
+                if(devUART < devCDC ){
+                  if (tEn  != NULL) a_conf->trans.uart_cdc = 1;
+                  if (tDis != NULL) a_conf->trans.uart_cdc = 0;
+                }
+            }
+            if (( devCDC != NULL ) && ( devSPI != NULL )){
+
+                if(devCDC < devSPI ){
+                  if (tEn  != NULL) a_conf->trans.cdc_spi = 1;
+                  if (tDis != NULL) a_conf->trans.cdc_spi = 0;
+                }
+                if(devSPI < devCDC ){
+                  if (tEn  != NULL) a_conf->trans.spi_cdc = 1;
+                  if (tDis != NULL) a_conf->trans.spi_cdc = 0;
+                }
+            }
+            if (( devCDC != NULL ) && ( devI2C != NULL )){
+
+                if(devCDC < devI2C ){
+                  if (tEn  != NULL) a_conf->trans.cdc_i2c = 1;
+                  if (tDis != NULL) a_conf->trans.cdc_i2c = 0;
+                }
+                if(devI2C < devCDC ){
+                  if (tEn  != NULL) a_conf->trans.i2c_cdc = 1;
+                  if (tDis != NULL) a_conf->trans.i2c_cdc = 0;
+                }
+            }
+
+            //UART ->>
+            if (( devUART != NULL ) && ( devSPI != NULL )){
+
+                if(devUART < devSPI ){
+                  if (tEn  != NULL) a_conf->trans.uart_spi = 1;
+                  if (tDis != NULL) a_conf->trans.uart_spi = 0;
+                }
+                if(devSPI < devUART ){
+                  if (tEn  != NULL) a_conf->trans.spi_uart = 1;
+                  if (tDis != NULL) a_conf->trans.spi_uart = 0;
+                }
+            }
+
+            if (( devUART != NULL ) && ( devI2C != NULL )){
+
+                if(devUART < devI2C ){
+                  if (tEn  != NULL) a_conf->trans.uart_i2c = 1;
+                  if (tDis != NULL) a_conf->trans.uart_i2c = 0;
+                }
+                if(devI2C < devUART ){
+                  if (tEn  != NULL) a_conf->trans.i2c_uart = 1;
+                  if (tDis != NULL) a_conf->trans.i2c_uart = 0;
+                }
+            }
+            // SPI ->>
+            if (( devSPI != NULL ) && ( devI2C != NULL )){
+
+                if(devSPI < devI2C ){
+                  if (tEn  != NULL) a_conf->trans.spi_i2c = 1;
+                  if (tDis != NULL) a_conf->trans.spi_i2c = 0;
+                }
+                if(devI2C < devSPI ){
+                  if (tEn  != NULL) a_conf->trans.i2c_spi = 1;
+                  if (tDis != NULL) a_conf->trans.i2c_spi = 0;
+                }
+            }
+
+
+
+
+        } // if c_cmd_trns
+
+        cmd = strstr(a_buf, c_cmd_save);
+        if ( cmd != NULL ){
 
             //a_buf[cmd_save] = 32;
 
@@ -401,8 +498,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( cmd_save >= 0 )
 
-        char* cmd_load = strstr(a_buf, c_cmd_load);
-        if ( cmd_load != NULL ){
+        cmd = strstr(a_buf, c_cmd_load);
+        if ( cmd != NULL ){
 
             read_struct_from_flash((char*)a_conf, sizeof(configuration_t));
 
@@ -418,8 +515,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( cmd_save >= 0 )
 
-        char* cmd_cfghex = strstr(a_buf, "CFGHEX");
-        if ( cmd_cfghex != NULL ){
+        cmd = strstr(a_buf, c_cmd_cfghex);
+        if ( cmd != NULL ){
             
             a_conf->crc = calc_cfg_crc(a_conf);
 
@@ -429,8 +526,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( cmd_cfghex >= 0 )
 
-        char* cmd_print = strstr(a_buf, c_cmd_print);
-        if ( cmd_print != NULL){
+        cmd = strstr(a_buf, c_cmd_print);
+        if ( cmd != NULL){
 
             //a_buf[cmd_print] = 32;
 
@@ -473,30 +570,76 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             CDC_writeString(c_rn);
             calculate_spi_speeds(a_conf);
 
-            a_conf->crc = calc_cfg_crc(a_conf);
+            CDC_writeString(c_rnt);CDC_writeString(c_cmd_trns);CDC_writeString(c_rnt);
+
+            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_uart);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_spi);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_i2c);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_cdc);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_spi);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_i2c);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_cdc);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_uart);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_i2c);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_cdc);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_uart);CDC_writeString(c_rn);
+
+            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
+            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_spi);CDC_writeString(c_rn);
+
+           a_conf->crc = calc_cfg_crc(a_conf);
             CDC_writeString(c_rn);
             print_conf_hex(a_conf);
             CDC_writeString(c_rn);
            return true;
         }
 
-        char* helpptr = strstr(a_buf, c_cmd_helpuart);
-        if ( helpptr != NULL){
+        cmd = strstr(a_buf, c_cmd_helpuart);
+        if ( cmd != NULL){
 
             CDC_writeLine(c_msg_helpuart);
             return true;
         }
 
-        helpptr = strstr(a_buf, c_cmd_helpspi);
-        if ( helpptr != NULL){
+        cmd = strstr(a_buf, c_cmd_helpspi);
+        if ( cmd != NULL){
 
             CDC_writeLine(c_msg_helpspi);
             return true;
         }
 
-        helpptr = strstr(a_buf, c_cmd_help);
-        if ( helpptr != NULL){
+        cmd = strstr(a_buf, c_cmd_help);
+        if ( cmd != NULL){
 
+                uint32_t ver = 
+                (TOBYTE(BUILD_YEAR_CH2,BUILD_YEAR_CH3)<< 24) |
+                (TOBYTE(BUILD_MONTH_CH0,BUILD_MONTH_CH1) << 16) |
+                (TOBYTE(BUILD_DAY_CH0,BUILD_DAY_CH1) << 8) |
+                (TOBYTE(BUILD_HOUR_CH0,BUILD_HOUR_CH1));
+            CDC_writeString(c_msg_ver);
+            CDC_writeHex(ver, 8);
+            CDC_writeString(c_rn);
             CDC_writeLine(c_msg_help1);
             return true;
         }

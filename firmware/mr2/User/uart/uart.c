@@ -76,6 +76,7 @@ void UART1_write(const char c) {
 // ===================================================================================
 
 // Init UART
+
 void UART2_init(uint16_t a_baud) {
 
 #if UART2_REMAP == 0
@@ -127,7 +128,160 @@ void UART2_init(uint16_t a_baud) {
   USART2->BRR     = ((2 * F_CPU / a_baud) + 1) / 2;
   USART2->CTLR1   = USART_CTLR1_RE | USART_CTLR1_TE | USART_CTLR1_UE;
 
-}// UART2_init(
+}// UART2_init()
+
+#ifdef UART_WITH_IRQ
+
+void UART2_Init2(uint32_t a_baud) {
+
+
+#if UART2_REMAP == 0
+  // Set pin PA2 (TX) to output, push-pull, alternate
+  // Set pin PA3 (RX) to input, pullup
+  RCC->APB2PCENR |= RCC_AFIOEN | RCC_IOPAEN;
+  GPIOA->CFGLR    = (GPIOA->CFGLR & ~(((uint32_t)0b1111<<(2<<2)) | ((uint32_t)0b1111<<(3<<2))))
+                                  |  (((uint32_t)0b1011<<(2<<2)) | ((uint32_t)0b1000<<(3<<2)));
+  GPIOA->BSHR     = (uint32_t)1<<3;
+#elif UART2_REMAP == 1 
+  // Set pin PA20 (TX) to output, push-pull, alternate
+  // Set pin PA19 (RX) to input, pullup
+  RCC->APB2PCENR |= RCC_AFIOEN | RCC_IOPAEN;
+  GPIOA->CFGXR    = (GPIOA->CFGXR & ~(((uint32_t)0b1111<<(4<<2)) | ((uint32_t)0b1111<<(3<<2))))
+                                  |  (((uint32_t)0b1011<<(4<<2)) | ((uint32_t)0b1000<<(3<<2)));
+  GPIOA->BSXR     = (uint32_t)1<<3;
+  AFIO->PCFR1    |= (uint32_t)0b001<<7;
+#elif UART2_REMAP == 2 
+  // Set pin PA15 (TX) to output, push-pull, alternate
+  // Set pin PA16 (RX) to input, pullup
+  RCC->APB2PCENR |= RCC_AFIOEN | RCC_IOPAEN;
+  GPIOA->CFGHR    = (GPIOA->CFGHR & ~((uint32_t)0b1111<<(7<<2))) | ((uint32_t)0b1011<<(7<<2)));
+  GPIOA->CFGXR    = (GPIOA->CFGXR & ~((uint32_t)0b1111<<(0<<2))) | ((uint32_t)0b1000<<(0<<2)));
+  GPIOA->BSXR     = (uint32_t)1<<0;
+  AFIO->PCFR1    |= (uint32_t)0b010<<7;
+#elif UART2_REMAP == 3
+  // Set pin PC0 (TX) to output, push-pull, alternate
+  // Set pin PC1 (RX) to input, pullup
+  RCC->APB2PCENR |= RCC_AFIOEN | RCC_IOPCEN;
+  GPIOC->CFGLR    = (GPIOC->CFGLR & ~(((uint32_t)0b1111<<(0<<2)) | ((uint32_t)0b1111<<(1<<2))))
+                                  |  (((uint32_t)0b1011<<(0<<2)) | ((uint32_t)0b1000<<(1<<2)));
+  GPIOC->BSHR     = (uint32_t)1<<1;
+  AFIO->PCFR1    |= (uint32_t)0b011<<7;
+#elif UART2_REMAP == 4 
+  // Set pin PA15 (TX) to output, push-pull, alternate
+  // Set pin PA16 (RX) to input, pullup
+  RCC->APB2PCENR |= RCC_AFIOEN | RCC_IOPAEN;
+  GPIOA->CFGHR    = (GPIOA->CFGHR & ~((uint32_t)0b1111<<(7<<2))) | ((uint32_t)0b1011<<(7<<2)));
+  GPIOA->CFGXR    = (GPIOA->CFGXR & ~((uint32_t)0b1111<<(0<<2))) | ((uint32_t)0b1000<<(0<<2)));
+  GPIOA->BSXR     = (uint32_t)1<<0;
+  AFIO->PCFR1    |= (uint32_t)0b100<<7;
+#else
+  #warning No USART2 REMAP
+#endif
+	
+  // Setup and start UART (8N1, RX/TX, default BAUD rate)
+  RCC->APB1PCENR |= RCC_USART2EN;
+  USART2->BRR     = ((2 * F_CPU / a_baud) + 1) / 2;
+  USART2->CTLR1   = USART_CTLR1_RE | USART_CTLR1_TE | USART_CTLR1_UE;
+
+  // Enable interrupts for RX and TX
+  USART2->CTLR1 |= USART_CTLR1_RXNEIE | USART_CTLR1_TXEIE;
+  
+  // Configure NVIC for USART2 interrupts
+  NVIC_EnableIRQ(USART2_IRQn);
+  NVIC_SetPriority(USART2_IRQn, 2);
+
+}// UART2_init2()
+
+uint8_t uart2_rx_buf[256];
+uint8_t uart2_tx_buf[256];
+uart_handler_t uart2_handler = {
+    .rx_buf = uart2_rx_buf,
+    .rx_len = 0,
+    .tx_buf = uart2_tx_buf,
+    .tx_len = 0,
+    .tx_pos = 0,
+    .rx_transaction = 0,
+    .tx_transaction = 0,
+    .uart = USART2
+};
+
+void USART2_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void USART2_IRQHandler(void) {
+
+    
+    if (USART2->STATR & USART_STATR_RXNE) {
+        uart2_handler.rx_transaction = 1; 
+        
+        uint8_t data = USART2->DATAR;
+        if (uart2_handler.rx_len < sizeof(uart2_rx_buf)) {
+            uart2_handler.rx_buf[uart2_handler.rx_len++] = data;
+        }
+        
+        uart2_handler.rx_transaction = 0; 
+        USART2->STATR &= ~USART_STATR_RXNE;
+    }
+    
+    
+    if (USART2->STATR & USART_STATR_TXE) {
+        uart2_handler.tx_transaction = 1; 
+        
+        if (uart2_handler.tx_pos < uart2_handler.tx_len) {
+            USART2->DATAR = uart2_handler.tx_buf[uart2_handler.tx_pos++];
+        } else {
+            
+            USART2->CTLR1 &= ~USART_CTLR1_TXEIE;
+            uart2_handler.tx_len = 0;
+            uart2_handler.tx_pos = 0;
+        }
+        
+        uart2_handler.tx_transaction = 0; 
+        USART2->STATR &= ~USART_STATR_TXE;
+    }
+}
+
+
+void uart_start_tx(volatile uart_handler_t *handler, const uint8_t *data, uint16_t len) {
+
+    while (handler->tx_transaction); 
+    
+   
+    for (uint16_t i = 0; i < len && i < sizeof(uart2_tx_buf); i++) {
+        handler->tx_buf[i] = data[i];
+    }
+    
+    handler->tx_len = len;
+    handler->tx_pos = 0;
+    
+    
+    handler->uart->CTLR1 |= USART_CTLR1_TXEIE;
+}
+
+
+uint16_t uart_get_rx_data(volatile uart_handler_t *handler, uint8_t *buffer, uint16_t max_len) {
+
+    while (handler->rx_transaction); 
+    
+    uint16_t copy_len = (handler->rx_len < max_len) ? handler->rx_len : max_len;
+    for (uint16_t i = 0; i < copy_len; i++) {
+        buffer[i] = handler->rx_buf[i];
+    }
+    
+    uint16_t ret_len = handler->rx_len;
+    handler->rx_len = 0; 
+    
+    return ret_len;
+}
+
+
+void uart_clear_rx_buffer(volatile uart_handler_t *handler) {
+
+    while (handler->rx_transaction); 
+    handler->rx_len = 0;
+}
+
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////
 
 // Read byte via UART
 char UART2_read(void) {
