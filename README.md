@@ -34,9 +34,9 @@ Sets the communication speed for the UART interface. <int value> must be a value
 Example: [SET:UART.BAUD=57600] - sets the communication speed to 57600.
 
 
-![](img/cfg-help.JPG){width=300} ![](img/cfg-helpuart.JPG){width=300}
-![](img/cfg-helpi2c.JPG){width=300}
-![](img/cfg-helpspi.JPG){width=300} ![](img/cfg-uartbaud-save.JPG){width=300}
+![](img/cfg-help.JPG){width=300} ![](img/cfg-helpuart.JPG)
+![](img/cfg-helpi2c.JPG)
+![](img/cfg-helpspi.JPG) ![](img/cfg-uartbaud-save.JPG)
 
 
 
