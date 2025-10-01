@@ -12,20 +12,22 @@ void configuration_init(configuration_t * a_inst){
     a_inst->cfg_uart.baud = (uint32_t)115200;
 }
 
+/*
 inline __attribute__((always_inline)) uint8_t conf_calc_crc(configuration_t* a_conf){
 
     uint8_t* inst = (uint8_t * )a_conf;
     inst++;
     return crc8(inst, CFG_CRC_SIZE);
 }
-
+*/
+/*
 bool is_conf_valid(configuration_t * a_inst){
 
 
     uint8_t crc = conf_calc_crc(a_inst);
     return ( a_inst->crc == crc);
 }
-
+*/
 inline __attribute__((always_inline)) void  cfg_uart_init(cfg_uart_t* a_conf){
 
     a_conf->baud = 115200;
@@ -50,6 +52,8 @@ inline __attribute__((always_inline)) void  cfg_init(configuration_t * a_conf){
 
     cfg_uart_init( &a_conf->cfg_uart );
     cfg_spi_init( &a_conf->cfg_spi );
+
+    a_conf->crc = calc_cfg_crc(a_conf);
     
 }
 
@@ -85,8 +89,10 @@ inline __attribute__((always_inline)) void  activate_cfg(configuration_t * a_con
     }   
 } 
 
-inline __attribute__((always_inline)) uint8_t  calc_cfg_crc(configuration_t * a_conf){
+/*inline __attribute__((always_inline))*/ uint8_t  calc_cfg_crc(configuration_t * a_conf){
 
-    uint8_t crc = crc8((uint8_t*)(a_conf+1), sizeof(configuration_t)-1);
+    uint8_t *buf = a_conf;
+    buf += 1;
+    uint8_t crc = crc8( buf, sizeof(configuration_t)-1);
     return crc;
 }

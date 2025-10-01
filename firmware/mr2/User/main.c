@@ -91,16 +91,18 @@ int main(void) {
   //**************************************************************
 
     cfg_init(&global_conf);
-    configuration_t *loc = &global_conf;
-    FLASH_Lock();
-    read_struct_from_flash((char*)loc, sizeof(configuration_t));
-    
-    uint8_t crc = //crc8((uint8_t*)(loc+1), sizeof(configuration_t)-1);
-                    calc_cfg_crc(loc);
-    if ( crc != global_conf.crc)
-        cfg_init(loc);
+    configuration_t loc ;
 
-    activate_cfg(loc);
+    read_struct_from_flash((char*)&loc, sizeof(configuration_t));
+    
+    uint8_t crc = calc_cfg_crc(&loc);
+
+    if ( crc != loc.crc)
+        cfg_init(&loc);
+    else 
+        global_conf = loc;
+
+    activate_cfg(&global_conf);
 
   //**************************************************************
 

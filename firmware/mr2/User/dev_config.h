@@ -9,17 +9,21 @@ extern "C" {
 #include <stdbool.h>
 
 typedef struct __attribute__((__packed__)){
+
     char uart:1;
     char spi:1;
     char i2c:1;
+
 } cfg_active_intefaces_t;
 
 typedef struct __attribute__((__packed__)){
+    
     uint32_t baud;
 
 } cfg_uart_t;
 
 typedef struct __attribute__((__packed__)){
+
     uint8_t prescaller:4;
     uint8_t baud:3;
     char master: 1;
@@ -28,7 +32,8 @@ typedef struct __attribute__((__packed__)){
 
 } cfg_spi_t;
 
-typedef struct __attribute__((__packed__)){
+typedef struct __attribute__((__packed__,aligned(4))){
+
     uint8_t crc;
     cfg_active_intefaces_t active_interfaces;
     cfg_uart_t cfg_uart;

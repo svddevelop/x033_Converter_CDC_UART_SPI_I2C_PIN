@@ -395,6 +395,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
               //CDC_writeLine(c_rn);
             }
 
+            print_conf_hex(a_conf);
+
             return true;              
 
         }// if ( cmd_save >= 0 )
@@ -402,13 +404,15 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
         char* cmd_load = strstr(a_buf, c_cmd_load);
         if ( cmd_load != NULL ){
 
-            //a_buf[cmd_load] = 32;
-
             read_struct_from_flash((char*)a_conf, sizeof(configuration_t));
 
             CDC_writeString(c_msg_readflash);
 
+            a_conf->crc = calc_cfg_crc(a_conf);
+
             print_conf_hex(a_conf);
+
+            activate_cfg(a_conf);
 
             return true;
 
@@ -417,6 +421,8 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
         char* cmd_cfghex = strstr(a_buf, "CFGHEX");
         if ( cmd_cfghex != NULL ){
             
+            a_conf->crc = calc_cfg_crc(a_conf);
+
             print_conf_hex(a_conf);
 
             return true;
@@ -466,6 +472,11 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             CDC_writeDec(a_conf->cfg_spi.prescaller);
             CDC_writeString(c_rn);
             calculate_spi_speeds(a_conf);
+
+            a_conf->crc = calc_cfg_crc(a_conf);
+            CDC_writeString(c_rn);
+            print_conf_hex(a_conf);
+            CDC_writeString(c_rn);
            return true;
         }
 
