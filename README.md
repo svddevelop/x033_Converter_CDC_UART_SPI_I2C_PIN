@@ -4,7 +4,7 @@ Using CDC (USB) connection you can
 
 programmatically control interfaces
 
-![](img/CDC_UART_SPI_I2C_Convertor3_top.JPG){width=300}	![](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG){width=300}	
+![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_top.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_top.JPG)	![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_bottom.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG)	
 
 
 ## Current commands
