@@ -58,6 +58,9 @@ extern "C" {
 
 #include "system.h"
 
+#define UART_WITH_IRQ
+//#define UART_WITH_IRQ_DMA
+
 // ===================================================================================
 // UART Parameters
 // ===================================================================================
@@ -96,6 +99,7 @@ extern "C" {
 #define UART1_setOddParity()  {USART1->CTLR1 |= USART_CTLR1_PCE; USART1->CTLR1 |=  USART_CTLR1_PS;}
 #define UART1_setNoParity()   USART1->CTLR1 &= ~USART_CTLR1_PCE
 
+ 
 #define UART2_ready()         (USART2->STATR & USART_STATR_TXE)   // ready to write
 #define UART2_available()     (USART2->STATR & USART_STATR_RXNE)  // ready to read
 #define UART2_completed()     (USART2->STATR & USART_STATR_TC)    // transmission completed
@@ -217,6 +221,40 @@ void UART4_write(const char c);           // send character via UART
 #define UART4_printf(f, ...)  printF(UART4_write, f, ##__VA_ARGS__)
 
 #endif // UART_PRINT = 1
+
+
+typedef struct {
+    volatile uint8_t *rx_buf;        // §¢§å§æ§Ö§â §á§â§Ú§Ö§Þ§Ñ
+    volatile uint16_t rx_len;        // §²§Ñ§Ù§Þ§Ö§â §á§â§Ú§ß§ñ§ä§í§ç §Õ§Ñ§ß§ß§í§ç
+    volatile uint8_t *tx_buf;        // §¢§å§æ§Ö§â §á§Ö§â§Ö§Õ§Ñ§é§Ú
+    volatile uint16_t tx_len;        // §²§Ñ§Ù§Þ§Ö§â §Õ§Ñ§ß§ß§í§ç §Õ§Ý§ñ §á§Ö§â§Ö§Õ§Ñ§é§Ú
+    volatile uint16_t tx_pos;        // §´§Ö§Ü§å§ë§Ñ§ñ §á§à§Ù§Ú§è§Ú§ñ §Ó §á§Ö§â§Ö§Õ§Ñ§é§Ö
+    volatile uint8_t rx_transaction; // §¶§Ý§Ñ§Ô §Ñ§Ü§ä§Ú§Ó§ß§à§ã§ä§Ú §á§â§Ú§Ö§Þ§Ñ
+    volatile uint8_t tx_transaction; // §¶§Ý§Ñ§Ô §Ñ§Ü§ä§Ú§Ó§ß§à§ã§ä§Ú §á§Ö§â§Ö§Õ§Ñ§é§Ú
+    USART_TypeDef *uart;             // §µ§Ü§Ñ§Ù§Ñ§ä§Ö§Ý§î §ß§Ñ UART
+} uart_handler_t;
+
+#ifdef UART_WITH_IRQ
+
+extern uint8_t uart2_rx_buf[256];
+extern uint8_t uart2_tx_buf[256];
+extern uart_handler_t uart2_handler;
+
+void UART2_Init2(uint32_t a_baud);
+void uart_start_tx(volatile uart_handler_t *handler, char *data, uint16_t len);
+uint16_t uart_get_rx_data(volatile uart_handler_t *handler, char *buffer, uint16_t max_len);
+void uart_clear_rx_buffer(volatile uart_handler_t *handler);
+
+#endif
+
+#ifdef UART_WITH_IRQ_DMA
+
+extern uint8_t uart2_rx_buf[256];
+extern uint8_t uart2_tx_buf[256];
+extern uart_handler_t uart2_handler;
+
+
+#endif
 
 #ifdef __cplusplus
 };

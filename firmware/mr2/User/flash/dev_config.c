@@ -48,10 +48,23 @@ inline __attribute__((always_inline)) void  cfg_init(configuration_t * a_conf){
 
     a_conf->active_interfaces.i2c       = 0;
     a_conf->active_interfaces.spi       = 0;
-    a_conf->active_interfaces.uart      = 0;
+    a_conf->active_interfaces.uart      = 1;
 
     cfg_uart_init( &a_conf->cfg_uart );
     cfg_spi_init( &a_conf->cfg_spi );
+
+    a_conf->trans.cdc_i2c               = 1;
+    a_conf->trans.cdc_spi               = 1;
+    a_conf->trans.cdc_uart              = 1;
+    a_conf->trans.uart_cdc              = 1;
+    a_conf->trans.uart_i2c              = 0;
+    a_conf->trans.uart_spi              = 0;
+    a_conf->trans.spi_uart              = 0;
+    a_conf->trans.spi_cdc               = 1;
+    a_conf->trans.spi_i2c               = 0;
+    a_conf->trans.i2c_cdc               = 1;
+    a_conf->trans.i2c_spi               = 0;
+    a_conf->trans.i2c_uart              = 0;
 
     a_conf->crc = calc_cfg_crc(a_conf);
     
@@ -61,9 +74,20 @@ inline __attribute__((always_inline)) void  activate_cfg(configuration_t * a_con
 
     if (a_conf->active_interfaces.uart != 0){
 
+        #ifdef UART_WITH_IRQ
+        
+        UART2_Init2( a_conf->cfg_uart.baud );
+
+        #endif
+
+        #ifndef UART_WITH_IRQ
+
         UART2_setBAUD( a_conf->cfg_uart.baud );
 
         UART2_enable();
+        
+        #endif
+
     } else {
 
         UART2_disable();

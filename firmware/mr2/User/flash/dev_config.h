@@ -32,12 +32,37 @@ typedef struct __attribute__((__packed__)){
 
 } cfg_spi_t;
 
+typedef struct __attribute__((__packed__)){
+
+    uint8_t cdc_uart:1;
+    uint8_t uart_cdc:1;
+
+    uint8_t cdc_spi:1;
+    uint8_t spi_cdc:1;
+
+    uint8_t cdc_i2c:1;
+    uint8_t i2c_cdc:1;
+
+    uint8_t spi_uart:1;
+    uint8_t uart_spi:1;
+
+    uint8_t i2c_uart:1;
+    uint8_t uart_i2c:1;
+
+    uint8_t spi_i2c:1;
+    uint8_t i2c_spi:1;
+
+
+} transfer_t;
+
 typedef struct __attribute__((__packed__,aligned(4))){
 
     uint8_t crc;
     cfg_active_intefaces_t active_interfaces;
     cfg_uart_t cfg_uart;
     cfg_spi_t cfg_spi;
+
+    transfer_t trans;
 
 } configuration_t;
 
