@@ -59,6 +59,7 @@ extern "C" {
 #include "system.h"
 
 #define UART_WITH_IRQ
+//#define UART_WITH_IRQ_DMA
 
 // ===================================================================================
 // UART Parameters
@@ -240,9 +241,18 @@ extern uint8_t uart2_tx_buf[256];
 extern uart_handler_t uart2_handler;
 
 void UART2_Init2(uint32_t a_baud);
-void uart_start_tx(volatile uart_handler_t *handler, const uint8_t *data, uint16_t len);
-uint16_t uart_get_rx_data(volatile uart_handler_t *handler, uint8_t *buffer, uint16_t max_len);
+void uart_start_tx(volatile uart_handler_t *handler, char *data, uint16_t len);
+uint16_t uart_get_rx_data(volatile uart_handler_t *handler, char *buffer, uint16_t max_len);
 void uart_clear_rx_buffer(volatile uart_handler_t *handler);
+
+#endif
+
+#ifdef UART_WITH_IRQ_DMA
+
+extern uint8_t uart2_rx_buf[256];
+extern uint8_t uart2_tx_buf[256];
+extern uart_handler_t uart2_handler;
+
 
 #endif
 

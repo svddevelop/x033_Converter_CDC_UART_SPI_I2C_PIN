@@ -13,6 +13,9 @@ extern "C" {
 
 bool ifcmdexec(char* a_buf, configuration_t* a_conf);
 
+void process_cdc(configuration_t * a_conf, char * a_cdc_buf, uint16_t * a_len);
+void process_uart(configuration_t * a_conf );
+
 
 #ifdef __cplusplus
 }
