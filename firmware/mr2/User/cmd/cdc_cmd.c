@@ -84,8 +84,13 @@ __code char c_msg_helpspi[] =
                                         "\r\n\t\t\t- 5 - CLOCK_RATE /64 ;"
                                         "\r\n\t\t\t- 6 - CLOCK_RATE /128 ;"
                                         "\r\n\t\t\t- 7 - CLOCK_RATE /256 ;"
+<<<<<<< HEAD
                                         "\r\n[SET:SPI.CPOL=<char val>]\t- set up the clock polarity (0 or 1);"
                                         "\r\n[SET:SPI.CPHA=<char val>]\t- set up the clock phase (0 or 1);"
+=======
+                                        "\r\n[SET:SPI.CPOL=<val>]\t- set up the clock polarity (0 or 1);"
+                                        "\r\n[SET:SPI.CPHA=<val>]\t- set up the clock phase (0 or 1);"
+>>>>>>> develop
                                         "\r\n[SET:SPI.EN]\t- enable SPI, disable pins;"
                                         "\r\n[SET:SPI.DIS]\t- disable SPI, enable pins;\r\n"
                                         " -o-o-o-o---o-o-o-o- \r\n"
@@ -108,13 +113,26 @@ __code char c_msg_helpi2c[] =
                                         "|\t\t    |\r\n"
                                          " -o-o-o-o---o-o-o-o- \r\n"
                                         ;
-__code char c_msg_help2[] =
-                                        ""
+__code char c_msg_helppin[] =
+                                        "\t[SET:PIN.<pin>=<mode>]\r\n"
+                                        "\t\twhere <pin> is apossible pin from the list:\r\n"
+                                        "\t\t\tPA2, PA3, PA4, PA5, PA6, PA7, PA10, PA11, PC18 PC19;\r\n\n"
+                                        "\t\tmode:\r\n"
+                                        "\t\t\t0 - input,\r\n"
+                                        "\t\t\t1 - input pull-down,\r\n"
+                                        "\t\t\t2 - input pull-up,\r\n"
+                                        "\t\t\t3 - input analog,\r\n"
+                                        "\t\t\t4 - output.\r\n\n"
+                                        "\t[<pin>=0/1] - setup 0 or 1 to the pin;"
+                                        "\t\tExample:\r\n\t\t\t[PA3=1]\r\n\t\t\t[PA3=0]\r\n"
+                                        "\t[<pin>?] - print the value from pin;\r\n"
                                         ;
 
 __code char c_msg_spibaseclock[]        = "Base SPI clock: ";                                        
 __code char c_msg_spi_hz[]              = " Hz\n";                                        
-__code char c_msg_spispeed[]            = "SPI speed: ";                                        
+__code char c_msg_spispeed[]            = "SPI speed: ";
+__code char* const c_pins_list[]        = {"PA2","PA3","PA4","PA5","PA6","PA7","PA10","PA11","PC18","PC19"}  ;     
+__code int c_pins_count                 = sizeof(c_pins_list) / sizeof(c_pins_list[0]);                  
 
 
 inline __attribute__((always_inline)) void calculate_spi_speeds(configuration_t* a_conf) {
@@ -158,13 +176,97 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
     if (( bk != NULL) && ( ek != NULL ))
         if ( bk < ek)
             eoc = strstr(a_buf, c_cmd_sh_r); //end of command
+<<<<<<< HEAD
 
     if ((eoc != NULL ) && ( ek < eoc )){
 
         char* cmd = strstr(a_buf, c_cmd_set);
         if ( cmd != NULL ){
+=======
 
-            //*cmd_set = 32;
+    if ((eoc != NULL ) && ( ek < eoc )){
+
+        char* cmd = strstr(a_buf, c_cmd_set); ///   CMD 'SET'
+        if ( cmd != NULL ){
+
+            ////////////////////////////// PIN //////////////////////////////////
+            uint8_t pin_idx = 0;
+            char* pin = NULL;
+            for(pin_idx = 0; pin_idx < c_pins_count; pin_idx++){
+
+                pin = strstr(a_buf, c_pins_list[pin_idx]);
+                if ( pin != NULL)
+                    break;
+            }
+            if (( pin != NULL) && ( ! IS_PIN_PC19( pin_idx ) )){ // exept PC19
+
+                uint32_t val = 0;
+                pin = strstr(pin, "=");
+                if ( pin != NULL){
+                    if (sscanf(pin, c_val_dec, &val) >= 0){
+
+                    }
+                }
+                
+                bool is_type_device = IS_PIN_UART(pin_idx);
+                if ( is_type_device ) {
+                    switch (pin_idx){
+                        case PIN_UART_RX:
+                            //SET_PIN_MODE()
+                            a_conf->cfg_pins.pa3.mode = val;
+                            break;
+                        case PIN_UART_TX:
+                            a_conf->cfg_pins.pa2.mode = val;
+                            break;
+                    }
+                };
+
+                is_type_device = IS_PIN_I2C(pin_idx);
+                if ( is_type_device ) {
+                    switch (pin_idx) {
+                        case PIN_I2C_SCL:
+                            //SET_PIN_MODE()
+                            a_conf->cfg_pins.pa10.mode = val;
+                            break;
+                        case PIN_I2C_SDA:
+                            a_conf->cfg_pins.pa11.mode = val;
+                            break;
+                    }
+                };
+
+                is_type_device = IS_PIN_SPI(pin_idx);
+                if ( is_type_device ) {
+                    switch (pin_idx){
+                        case PIN_SPI_CS:
+                            //SET_PIN_MODE()
+                            a_conf->cfg_pins.pa4.mode = val;
+                            break;
+                        case PIN_SPI_SCK:
+                            a_conf->cfg_pins.pa5.mode = val;
+                            break;
+                        case PIN_SPI_MISO:
+                            //SET_PIN_MODE()
+                            a_conf->cfg_pins.pa6.mode = val;
+                            break;
+                        case PIN_SPI_MOSI:
+                            a_conf->cfg_pins.pa7.mode = val;
+                            break;
+                    }
+                };
+
+           
+                if ( (pin_idx == PIN_PIN_1) ) {
+                   a_conf->cfg_pins.pc18.mode = val; 
+                }
+
+                return true;
+
+            }// if ( pin != NULL)
+            //*******************************************************************
+
+
+>>>>>>> develop
+
 
             //////////////////////////////   UART    ///////////////////////////
 
@@ -528,6 +630,20 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( cmd_save >= 0 )
 
+<<<<<<< HEAD
+=======
+        cmd = strstr(a_buf, c_dev_pin); // ACHTUNG !!! hier cmd == dev !!!
+        if ( cmd != NULL ){
+
+            //pin 
+
+            activate_cfg(a_conf);
+
+            return true;
+
+        }// if ( c_cmd_pin >= 0 )
+
+>>>>>>> develop
         cmd = strstr(a_buf, c_cmd_cfghex);
         if ( cmd != NULL ){
             
@@ -632,6 +748,23 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
            return true;
         }
 
+<<<<<<< HEAD
+=======
+        cmd = strstr(a_buf, c_cmd_helpi2c);
+        if ( cmd != NULL){
+
+            CDC_writeLine(c_msg_helpi2c);
+            return true;
+        }
+
+        cmd = strstr(a_buf, c_cmd_helppin);
+        if ( cmd != NULL){
+
+            CDC_writeLine(c_msg_helppin);
+            return true;
+        }
+
+>>>>>>> develop
         cmd = strstr(a_buf, c_cmd_helpuart);
         if ( cmd != NULL){
 
@@ -654,6 +787,10 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
                 (TOBYTE(BUILD_MONTH_CH0,BUILD_MONTH_CH1) << 16) |
                 (TOBYTE(BUILD_DAY_CH0,BUILD_DAY_CH1) << 8) |
                 (TOBYTE(BUILD_HOUR_CH0,BUILD_HOUR_CH1));
+<<<<<<< HEAD
+=======
+                
+>>>>>>> develop
             CDC_writeString(c_msg_ver);
             CDC_writeHex(ver, 8);
             CDC_writeString(c_rn);
