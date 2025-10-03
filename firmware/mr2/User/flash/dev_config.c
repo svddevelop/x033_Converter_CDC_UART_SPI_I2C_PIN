@@ -67,11 +67,8 @@ inline __attribute__((always_inline)) void  cfg_init(configuration_t * a_conf){
     a_conf->trans.i2c_spi               = 0;
     a_conf->trans.i2c_uart              = 0;
 
-<<<<<<< HEAD
-=======
     cfg_pins_init( &a_conf->cfg_pins );
 
->>>>>>> develop
     a_conf->crc = calc_cfg_crc(a_conf);
     
 }

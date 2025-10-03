@@ -4,15 +4,7 @@ Using CDC (USB) connection you can
 
 programmatically control interfaces
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_top.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_top.JPG)	![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_bottom.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG)	
-=======
 ![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_top.JPG" width="100"](img/CDC_UART_SPI_I2C_Convertor3_top.JPG)	![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_bottom.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG)	
->>>>>>> develop
-=======
-![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_top.JPG" width="100"](img/CDC_UART_SPI_I2C_Convertor3_top.JPG)	![<img src="img/cfg-CDC_UART_SPI_I2C_Convertor3_bottom.JPG" width="100">](img/CDC_UART_SPI_I2C_Convertor3_bottom.JPG)	
->>>>>>> develop
 
 
 ## Current commands
@@ -51,14 +43,6 @@ Example: [SET:UART.BAUD=57600] - sets the communication speed to 57600.
 ### [SET:SPI.PRESC=\<char value>]
 set the base clock prescaler:
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-![](img/cfg-help.JPG){width=300} ![](img/cfg-helpuart.JPG)
-![](img/cfg-helpi2c.JPG)
-![](img/cfg-helpspi.JPG) ![](img/cfg-uartbaud-save.JPG)
-=======
-=======
->>>>>>> develop
 BASE CLOCK = 48MHz /(2 << PRESC );
 
 ### [SET:SPI.BAUD=\<char value>]
@@ -101,10 +85,6 @@ for example:
 ![<img src="img/cfg-help.JPG" width="100">](img/cfg-help.JPG) ![<img src="img/cfg-helpuart.JPG" width="100">](img/cfg-helpuart.JPG)
 ![<img src="img/cfg-helpi2c.JPG" width="100">](img/cfg-helpi2c.JPG)
 ![<img src="img/cfg-helpspi.JPG" width="100">](img/cfg-helpspi.JPG) ![<img src="img/cfg-uartbaud-save.JPG" width="100">](img/cfg-uartbaud-save.JPG)
-<<<<<<< HEAD
->>>>>>> develop
-=======
->>>>>>> develop
 
 
 

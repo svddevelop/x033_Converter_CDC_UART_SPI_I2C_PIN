@@ -84,13 +84,8 @@ __code char c_msg_helpspi[] =
                                         "\r\n\t\t\t- 5 - CLOCK_RATE /64 ;"
                                         "\r\n\t\t\t- 6 - CLOCK_RATE /128 ;"
                                         "\r\n\t\t\t- 7 - CLOCK_RATE /256 ;"
-<<<<<<< HEAD
-                                        "\r\n[SET:SPI.CPOL=<char val>]\t- set up the clock polarity (0 or 1);"
-                                        "\r\n[SET:SPI.CPHA=<char val>]\t- set up the clock phase (0 or 1);"
-=======
                                         "\r\n[SET:SPI.CPOL=<val>]\t- set up the clock polarity (0 or 1);"
                                         "\r\n[SET:SPI.CPHA=<val>]\t- set up the clock phase (0 or 1);"
->>>>>>> develop
                                         "\r\n[SET:SPI.EN]\t- enable SPI, disable pins;"
                                         "\r\n[SET:SPI.DIS]\t- disable SPI, enable pins;\r\n"
                                         " -o-o-o-o---o-o-o-o- \r\n"
@@ -176,13 +171,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
     if (( bk != NULL) && ( ek != NULL ))
         if ( bk < ek)
             eoc = strstr(a_buf, c_cmd_sh_r); //end of command
-<<<<<<< HEAD
-
-    if ((eoc != NULL ) && ( ek < eoc )){
-
-        char* cmd = strstr(a_buf, c_cmd_set);
-        if ( cmd != NULL ){
-=======
 
     if ((eoc != NULL ) && ( ek < eoc )){
 
@@ -265,7 +253,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             //*******************************************************************
 
 
->>>>>>> develop
 
 
             //////////////////////////////   UART    ///////////////////////////
@@ -630,8 +617,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( cmd_save >= 0 )
 
-<<<<<<< HEAD
-=======
         cmd = strstr(a_buf, c_dev_pin); // ACHTUNG !!! hier cmd == dev !!!
         if ( cmd != NULL ){
 
@@ -643,7 +628,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         }// if ( c_cmd_pin >= 0 )
 
->>>>>>> develop
         cmd = strstr(a_buf, c_cmd_cfghex);
         if ( cmd != NULL ){
             
@@ -748,8 +732,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
            return true;
         }
 
-<<<<<<< HEAD
-=======
         cmd = strstr(a_buf, c_cmd_helpi2c);
         if ( cmd != NULL){
 
@@ -764,7 +746,6 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
             return true;
         }
 
->>>>>>> develop
         cmd = strstr(a_buf, c_cmd_helpuart);
         if ( cmd != NULL){
 
@@ -787,10 +768,7 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
                 (TOBYTE(BUILD_MONTH_CH0,BUILD_MONTH_CH1) << 16) |
                 (TOBYTE(BUILD_DAY_CH0,BUILD_DAY_CH1) << 8) |
                 (TOBYTE(BUILD_HOUR_CH0,BUILD_HOUR_CH1));
-<<<<<<< HEAD
-=======
                 
->>>>>>> develop
             CDC_writeString(c_msg_ver);
             CDC_writeHex(ver, 8);
             CDC_writeString(c_rn);

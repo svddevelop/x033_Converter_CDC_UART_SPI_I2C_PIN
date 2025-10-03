@@ -4,8 +4,6 @@
 extern "C" {
 #endif
 
-<<<<<<< HEAD
-=======
 /* pins 
  //uart
  PA2
@@ -70,7 +68,6 @@ extern "C" {
      (x) == PIN_I2C_SDA ? PA11 : \
      (x) == PIN_PIN_1 ? PC18 : \
      (x) == PIN_PIN_2 ? PC19 : 0)     
->>>>>>> develop
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -122,8 +119,6 @@ typedef struct __attribute__((__packed__)){
 
 } transfer_t;
 
-<<<<<<< HEAD
-=======
 typedef struct __attribute__((__packed__)){
     char mode: 4;
     //char interrupt: 4;
@@ -152,7 +147,6 @@ typedef struct __attribute__((__packed__)){
 } cfg_pins_t;
 
 
->>>>>>> develop
 typedef struct __attribute__((__packed__,aligned(4))){
 
     uint8_t crc;
@@ -161,10 +155,7 @@ typedef struct __attribute__((__packed__,aligned(4))){
     cfg_spi_t cfg_spi;
 
     transfer_t trans;
-<<<<<<< HEAD
-=======
     cfg_pins_t cfg_pins;
->>>>>>> develop
 
 } configuration_t;
 
@@ -179,10 +170,7 @@ bool        conf_write_to_flash(configuration_t* a_conf);
 
 void        cfg_uart_init(cfg_uart_t* a_conf);
 void        cfg_spi_init(cfg_spi_t* a_conf);
-<<<<<<< HEAD
-=======
 void        cfg_pins_init(cfg_pins_t *a_conf);
->>>>>>> develop
 void        cfg_init(configuration_t * a_conf);
 void        activate_cfg(configuration_t * a_conf);
 uint8_t     calc_cfg_crc(configuration_t * a_conf);

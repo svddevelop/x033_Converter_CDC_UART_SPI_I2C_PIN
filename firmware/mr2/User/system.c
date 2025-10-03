@@ -343,7 +343,7 @@ void reset_handler(void) {
     #if __GNUC__ > 10
     ".option arch, +zicsr     \n"
     #endif
-  " li a0, 0x1f               \n\
+  " li a0, 0x1e               \n\
     csrw 0xbc0, a0            \n\
     li a0, 0x88               \n\
     csrs mstatus, a0          \n\
