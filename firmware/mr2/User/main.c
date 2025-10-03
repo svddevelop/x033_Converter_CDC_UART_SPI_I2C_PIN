@@ -54,21 +54,21 @@
 
 
 #include "system.h"                               // system functions
-#include "gpio.h"                                 // GPIO functions
-#include "usb_cdc.h"
+#include "gpio/gpio.h"                                 // GPIO functions
+#include "USB/usb_cdc.h"
 #include "uart/uart.h"
 
-#include "flash_userdata.h"
-#include "print.h"
+#include "flash/flash_userdata.h"
+#include "sys/print.h"
 #include <stdlib.h>
-#include "dev_config.h"
-#include "cdc_cmd.h"
+#include "flash/dev_config.h"
+#include "cmd/cdc_cmd.h"
 
 
 #define PIN_LED PB1                               // define LED pin
 
 static char cdc_buffer[256];
-static int cdc_buffer_len = 0;
+static uint16_t cdc_buffer_len = 0;
 
 #ifndef __code
 #define __code const __attribute__((section(".rodata")))
@@ -81,6 +81,11 @@ configuration_t global_conf;
 // Main Function
 // ===================================================================================
 int main(void) {
+
+    CLK_init();
+    HSI_enable();
+ 
+
 
 
   // Setup
@@ -132,8 +137,10 @@ int main(void) {
 
         }
 
-        if ( count > 0 )
-            for (int i = 0; i < count; i++){
+
+        if ( count > 0 ){
+
+            /*for (int i = 0; i < count; i++){
 
 
                 char ch = cdc_buffer[i];
@@ -141,16 +148,25 @@ int main(void) {
                 //CDC_write( ch ); // for test of buffer
 
                 //UART4_write( ch );
-            }
+            }*/
+
+            process_cdc( &global_conf, cdc_buffer, &cdc_buffer_len );
+
+        }
         CDC_flush();
 
     }
 
+    process_uart( &global_conf );
+
+
+    /*
     if ( UART2_available() ){
 
         CDC_write( UART2_read() );
         CDC_flush();
     }
+    */
     /*
     if ( UART4_available() ){
 
