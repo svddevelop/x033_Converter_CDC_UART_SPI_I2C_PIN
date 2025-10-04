@@ -110,6 +110,8 @@ inline __attribute__((always_inline)) void  activate_cfg(configuration_t * a_con
 
     if (a_conf->active_interfaces.spi != 0){
 
+        SPI_disable(); //befor changes for any flags, need to deactivate SPI
+
         SPI_setBAUD(a_conf->cfg_spi.baud);
         SPI_init_ext( 
                 a_conf->cfg_spi.master

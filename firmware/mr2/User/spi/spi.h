@@ -50,7 +50,7 @@ extern "C" {
 #define SPI_setBAUD(n)      SPI1->CTLR1 = (SPI1->CTLR1&~SPI_CTLR1_BR) | (((n)&7)<<3)
 
 void SPI_init(void);
-void SPI_init_ext(char a_master, uint16_t a_prescaller, char a_pha, char a_pol );
+void SPI_init_ext(char a_master, char a_hw_cs, uint16_t a_prescaller, char a_pha, char a_pol );
 uint8_t SPI_transfer(uint8_t data);
 
 #ifdef __cplusplus

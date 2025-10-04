@@ -375,8 +375,17 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
                     if (sscanf(&par[5], c_val_dec, &val) >= 0){
                         if ((val >= 0) & (val <= 7)){
 
+§­§µ§¹§º§ª§« §£§¡§²§ª§¡§¯§´: §ã§Õ§Ö§Ý§Ñ§ä§î §Ó§ã§Ö §Ó §ã§à§ç§â§Ñ§ß§Ö§ß§Ú§Ú §Ü§à§ß§æ§Ú§Ô§Ñ §Ú §Ù§Ñ§ä§Ö§Þ §Ó§í§Ù§Ó§Ñ§ä§î activate_cfg()
+                            
+
+
+                            //CS must be as comfigured for master and slave separate
+
+
+
                             a_conf->cfg_spi.baud = val;
-                            SPI_setBAUD(a_conf->cfg_spi.baud = val);
+
+                            activate_cfg();
 
                         }
                         a_buf[0] = 0;
