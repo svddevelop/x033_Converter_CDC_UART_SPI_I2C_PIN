@@ -148,7 +148,7 @@ void SPI_init_ext(char a_master, char a_hw_cs, uint16_t a_prescaller, char a_pha
                                 |  (((uint32_t)0b1011<<(5<<2)) | ((uint32_t)0b1000<<(6<<2)) | ((uint32_t)0b1011<<(7<<2)) );
   GPIOA->BSHR   = (uint32_t)1<<6;
 
-a_hw_cs ????????
+//a_hw_cs ????????
 
 
   uint16_t ctlr1 = (a_prescaller << 3)      // set prescaler

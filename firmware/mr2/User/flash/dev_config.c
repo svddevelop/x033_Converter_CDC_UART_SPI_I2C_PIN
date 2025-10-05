@@ -114,7 +114,8 @@ inline __attribute__((always_inline)) void  activate_cfg(configuration_t * a_con
 
         SPI_setBAUD(a_conf->cfg_spi.baud);
         SPI_init_ext( 
-                a_conf->cfg_spi.master
+                  a_conf->cfg_spi.master
+                , a_conf->cfg_spi.hw_cs
                 , a_conf->cfg_spi.prescaller
                 , a_conf->cfg_spi.pha
                 , a_conf->cfg_spi.pol

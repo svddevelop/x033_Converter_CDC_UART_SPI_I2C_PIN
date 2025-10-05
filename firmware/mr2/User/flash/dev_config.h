@@ -91,6 +91,7 @@ typedef struct __attribute__((__packed__)){
     uint8_t prescaller:4;
     uint8_t baud:3;
     char master: 1;
+    char hw_cs: 1;
     char pha: 1;
     char pol: 1;
 

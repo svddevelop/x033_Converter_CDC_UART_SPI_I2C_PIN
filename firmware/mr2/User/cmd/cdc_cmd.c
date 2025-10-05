@@ -177,79 +177,24 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
         char* cmd = strstr(a_buf, c_cmd_set); ///   CMD 'SET'
         if ( cmd != NULL ){
 
+            dev = strstr(a_buf, "CFG=");
+            if (dev != NULL){
+
+                char hexbuf[sizeof(configuration_t)];
+                configuration_t *new_conf = (configuration_t *)hexbuf;
+
+
+                parse_hex_config(dev, ek, hexbuf, sizeof(hexbuf) );
+
+                *a_conf = *new_conf;
+                activate_cfg(a_conf);
+
+
+            }//  if (dev != NULL) CFG=
+
+
             ////////////////////////////// PIN //////////////////////////////////
-            uint8_t pin_idx = 0;
-            char* pin = NULL;
-            for(pin_idx = 0; pin_idx < c_pins_count; pin_idx++){
-
-                pin = strstr(a_buf, c_pins_list[pin_idx]);
-                if ( pin != NULL)
-                    break;
-            }
-            if (( pin != NULL) && ( ! IS_PIN_PC19( pin_idx ) )){ // exept PC19
-
-                uint32_t val = 0;
-                pin = strstr(pin, "=");
-                if ( pin != NULL){
-                    if (sscanf(pin, c_val_dec, &val) >= 0){
-
-                    }
-                }
-                
-                bool is_type_device = IS_PIN_UART(pin_idx);
-                if ( is_type_device ) {
-                    switch (pin_idx){
-                        case PIN_UART_RX:
-                            //SET_PIN_MODE()
-                            a_conf->cfg_pins.pa3.mode = val;
-                            break;
-                        case PIN_UART_TX:
-                            a_conf->cfg_pins.pa2.mode = val;
-                            break;
-                    }
-                };
-
-                is_type_device = IS_PIN_I2C(pin_idx);
-                if ( is_type_device ) {
-                    switch (pin_idx) {
-                        case PIN_I2C_SCL:
-                            //SET_PIN_MODE()
-                            a_conf->cfg_pins.pa10.mode = val;
-                            break;
-                        case PIN_I2C_SDA:
-                            a_conf->cfg_pins.pa11.mode = val;
-                            break;
-                    }
-                };
-
-                is_type_device = IS_PIN_SPI(pin_idx);
-                if ( is_type_device ) {
-                    switch (pin_idx){
-                        case PIN_SPI_CS:
-                            //SET_PIN_MODE()
-                            a_conf->cfg_pins.pa4.mode = val;
-                            break;
-                        case PIN_SPI_SCK:
-                            a_conf->cfg_pins.pa5.mode = val;
-                            break;
-                        case PIN_SPI_MISO:
-                            //SET_PIN_MODE()
-                            a_conf->cfg_pins.pa6.mode = val;
-                            break;
-                        case PIN_SPI_MOSI:
-                            a_conf->cfg_pins.pa7.mode = val;
-                            break;
-                    }
-                };
-
-           
-                if ( (pin_idx == PIN_PIN_1) ) {
-                   a_conf->cfg_pins.pc18.mode = val; 
-                }
-
-                return true;
-
-            }// if ( pin != NULL)
+            #include "cmd_set_pin.inc"
             //*******************************************************************
 
 
@@ -257,55 +202,11 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
             //////////////////////////////   UART    ///////////////////////////
 
-            dev = strstr(a_buf, c_dev_uart) ;
-            if (dev != NULL){
+            #include "cmd_set_uart.inc"
 
-                //a_buf[dev_uart] = 32;
+            //////////////////////////////   UART    ///////////////////////////
 
-                par = strstr(a_buf, c_par_baud);
-                if (par != NULL){
-
-                    //a_buf[par_baud] = 32;
-
-                    uint32_t baud = a_conf->cfg_uart.baud;
-                    if (sscanf(&par[5], c_val_dec, &baud) >= 0){
-                        a_conf->cfg_uart.baud = baud;
-                        #ifdef UART_WITH_IRQ
-                        UART2_Init2( baud );
-                        //UART2_setBAUD( baud );
-                        #endif
-                        #ifndef UART_WITH_IRQ
-                        UART2_init(  baud );
-                        #endif
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-                par = strstr(a_buf, c_par_en);
-                if (par != NULL){
- 
-                        //a_buf[par] = 32;
-                        a_conf->active_interfaces.uart = 1;
-
-                        UART2_enable();
-                        a_buf[0] = 0;
-                        return true;
-                }
-                par = strstr(a_buf, c_par_dis);
-                if (par != NULL ){
- 
-                        //a_buf[par] = 32;
-                        a_conf->active_interfaces.uart = 0;
-
-                        UART2_disable();
-                        a_buf[0] = 0;
-                        return true;
-                }
-
-                return true;
-
-            }//if (dev != NULL)  c_dev_uart
+    //*************************************************************************
 
             dev = strstr(a_buf, c_dev_i2c) ;
             if (dev != NULL){
@@ -327,9 +228,7 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
                     return true;
                 }
 
-                //*************************************************************************
-
-                //////////////////////////  I2C  ////////////////////////////////////
+    //////////////////////////  I2C  ////////////////////////////////////
 
                 par = strstr(a_buf, c_par_en);
                 if (par != NULL){
@@ -363,231 +262,14 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
             ///////////////////////   SPI ////////////////////////////////////////
 
-            dev = strstr(a_buf, c_dev_spi) ;
-            if (dev != NULL){
-
-                int val = 0;
-
-                par = strstr(a_buf, c_par_baud);
-                if (par != NULL){
-
-                    val = a_conf->cfg_spi.baud;
-                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
-                        if ((val >= 0) & (val <= 7)){
-
-§­§µ§¹§º§ª§« §£§¡§²§ª§¡§¯§´: §ã§Õ§Ö§Ý§Ñ§ä§î §Ó§ã§Ö §Ó §ã§à§ç§â§Ñ§ß§Ö§ß§Ú§Ú §Ü§à§ß§æ§Ú§Ô§Ñ §Ú §Ù§Ñ§ä§Ö§Þ §Ó§í§Ù§Ó§Ñ§ä§î activate_cfg()
-                            
-
-
-                            //CS must be as comfigured for master and slave separate
-
-
-
-                            a_conf->cfg_spi.baud = val;
-
-                            activate_cfg();
-
-                        }
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-               par = strstr(a_buf, c_par_presc);
-                if (par != NULL){
-
-                    val = a_conf->cfg_spi.prescaller;
-                    if (sscanf(&par[6], c_val_dec, &val) >= 0){
-                        if ((val >= 0) & (val <= 7)){
-
-                            a_conf->cfg_spi.prescaller = val;
-                            activate_cfg(a_conf); 
-
-                        }
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-                par = strstr(a_buf, c_par_master);
-                if (par != NULL){
-
-                    val = a_conf->cfg_spi.master;
-                    if (sscanf(&par[7], c_val_dec, &val) >= 0){
-
-                        if ((val == 0) )
-                            a_conf->cfg_spi.master = 0;
-                        else 
-                          a_conf->cfg_spi.master = 1;
-
-                        activate_cfg(a_conf);                            
-                        
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-                par = strstr(a_buf, c_par_cpol);
-                if (par != NULL){
-
-                    val = a_conf->cfg_spi.pol;
-                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
-
-                        if ((val == 0) )
-                            a_conf->cfg_spi.pol = 0;
-                        else 
-                          a_conf->cfg_spi.pol = 1;
-
-                        activate_cfg(a_conf);                            
-                        
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-                par = strstr(a_buf, c_par_cpha);
-                if (par != NULL){
-
-                    val = a_conf->cfg_spi.pha;
-                    if (sscanf(&par[5], c_val_dec, &val) >= 0){
-
-                        if ((val == 0) )
-                            a_conf->cfg_spi.pha = 0;
-                        else 
-                          a_conf->cfg_spi.pha = 1;
-
-                        activate_cfg(a_conf);                            
-                        
-                        a_buf[0] = 0;
-                        return true;
-                    }
-                    return true;
-                }
-               
-
-
-                par = strstr(a_buf, c_par_en);
-                if (par != NULL){
- 
-                        //a_buf[par] = 32;
-                        a_conf->active_interfaces.spi = 1;
-
-                        SPI_enable();
-
-                        a_buf[0]    = 0;
-                        par[0]      = 0;
-                        return true;
-                }
-                par = strstr(a_buf, c_par_dis);
-                if (par != NULL ){
- 
-                        //a_buf[par] = 32;
-                        a_conf->active_interfaces.spi = 0;
-
-                        SPI_disable();
-
-                        a_buf[0]    = 0;
-                        par[0]      = 0;
-                        return true;
-                }
-
-                return true;
-            }//if (dev != NULL)  c_dev_spi
-
+            #include "cmd_set_spi.inc"
 
             //*****************************************************************
 
             return true;
         }//if ( cmd_set >= 0 )  
 
-
-        cmd = strstr(a_buf, c_cmd_trns);
-        if ( cmd != NULL ){
-
-            char * devCDC  = strstr(a_buf, c_dev_cdc)
-               , * devUART = strstr(a_buf, c_dev_uart)
-               , * devSPI  = strstr(a_buf, c_dev_spi)
-               , * devI2C  = strstr(a_buf, c_dev_i2c)
-               , * tEn     = strstr(a_buf, c_par_en) 
-               , * tDis    = strstr(a_buf, c_par_dis) 
-               ; 
-
-            // CDC ->>
-            if (( devCDC != NULL ) && ( devUART != NULL )){
-
-                if(devCDC < devUART ){
-                  if (tEn  != NULL) a_conf->trans.cdc_uart = 1;
-                  if (tDis != NULL) a_conf->trans.cdc_uart = 0;
-                }
-                if(devUART < devCDC ){
-                  if (tEn  != NULL) a_conf->trans.uart_cdc = 1;
-                  if (tDis != NULL) a_conf->trans.uart_cdc = 0;
-                }
-            }
-            if (( devCDC != NULL ) && ( devSPI != NULL )){
-
-                if(devCDC < devSPI ){
-                  if (tEn  != NULL) a_conf->trans.cdc_spi = 1;
-                  if (tDis != NULL) a_conf->trans.cdc_spi = 0;
-                }
-                if(devSPI < devCDC ){
-                  if (tEn  != NULL) a_conf->trans.spi_cdc = 1;
-                  if (tDis != NULL) a_conf->trans.spi_cdc = 0;
-                }
-            }
-            if (( devCDC != NULL ) && ( devI2C != NULL )){
-
-                if(devCDC < devI2C ){
-                  if (tEn  != NULL) a_conf->trans.cdc_i2c = 1;
-                  if (tDis != NULL) a_conf->trans.cdc_i2c = 0;
-                }
-                if(devI2C < devCDC ){
-                  if (tEn  != NULL) a_conf->trans.i2c_cdc = 1;
-                  if (tDis != NULL) a_conf->trans.i2c_cdc = 0;
-                }
-            }
-
-            //UART ->>
-            if (( devUART != NULL ) && ( devSPI != NULL )){
-
-                if(devUART < devSPI ){
-                  if (tEn  != NULL) a_conf->trans.uart_spi = 1;
-                  if (tDis != NULL) a_conf->trans.uart_spi = 0;
-                }
-                if(devSPI < devUART ){
-                  if (tEn  != NULL) a_conf->trans.spi_uart = 1;
-                  if (tDis != NULL) a_conf->trans.spi_uart = 0;
-                }
-            }
-
-            if (( devUART != NULL ) && ( devI2C != NULL )){
-
-                if(devUART < devI2C ){
-                  if (tEn  != NULL) a_conf->trans.uart_i2c = 1;
-                  if (tDis != NULL) a_conf->trans.uart_i2c = 0;
-                }
-                if(devI2C < devUART ){
-                  if (tEn  != NULL) a_conf->trans.i2c_uart = 1;
-                  if (tDis != NULL) a_conf->trans.i2c_uart = 0;
-                }
-            }
-            // SPI ->>
-            if (( devSPI != NULL ) && ( devI2C != NULL )){
-
-                if(devSPI < devI2C ){
-                  if (tEn  != NULL) a_conf->trans.spi_i2c = 1;
-                  if (tDis != NULL) a_conf->trans.spi_i2c = 0;
-                }
-                if(devI2C < devSPI ){
-                  if (tEn  != NULL) a_conf->trans.i2c_spi = 1;
-                  if (tDis != NULL) a_conf->trans.i2c_spi = 0;
-                }
-            }
-
-
-
-
-        } // if c_cmd_trns
+        #include "cmd_transfer.inc"
 
         cmd = strstr(a_buf, c_cmd_save);
         if ( cmd != NULL ){
@@ -650,95 +332,7 @@ inline __attribute__((always_inline)) bool ifcmdexec(char* a_buf, configuration_
 
         cmd = strstr(a_buf, c_cmd_print);
         if ( cmd != NULL){
-
-            //a_buf[cmd_print] = 32;
-
-            uint32_t rcc_cr   = RCC->CTLR;   // §Ú§Ý§Ú RCC->CR, §Ó §Ù§Ñ§Ó§Ú§ã§Ú§Þ§à§ã§ä§Ú §à§ä §Ù§Ñ§Ô§à§Ý§à§Ó§Ü§à§Ó CH32
-            uint32_t rcc_cfgr = RCC->CFGR0;
-            CDC_writeString("RCC CTLR = 0x");CDC_writeHex(rcc_cr,8);CDC_writeString(" CFGR = 0x");CDC_writeHex(rcc_cfgr,8);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_uart);
-            CDC_writeString(c_rnt_active);
-            CDC_writeString(a_conf->active_interfaces.uart ? c_par_en : c_par_dis);
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_baud);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_uart.baud);
-            CDC_writeString(c_rn);
-            CDC_writeString(c_dev_spi);
-            CDC_writeString(c_rnt_active);
-            CDC_writeString(a_conf->active_interfaces.spi ? c_par_en : c_par_dis);
-
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_master);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_spi.master);
-
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_cpha);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_spi.pha);
-
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_cpol);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_spi.pol);
-
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_baud);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_spi.baud);
- 
-            CDC_writeString(c_rnt);
-            CDC_writeString(c_par_presc);
-            CDC_writeString(c_eq);
-            CDC_writeDec(a_conf->cfg_spi.prescaller);
-            //CDC_writeString(c_rn);
-            calculate_spi_speeds(a_conf);
-
-            CDC_writeString(c_rnt);CDC_writeString(c_cmd_trns);CDC_writeString(c_rnt);
-
-            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_uart);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_spi);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_cdc);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.cdc_i2c);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_cdc);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_spi);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_uart);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.uart_i2c);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_cdc);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_uart);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_spi);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_i2c); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.spi_i2c);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_cdc); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_cdc);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_uart); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_uart);CDC_writeString(c_rn);
-
-            CDC_writeString(c_dev_i2c);CDC_writeString(c_msg_fromto);CDC_writeString(c_dev_spi); 
-            CDC_writeString(c_eq); CDC_writeDec(a_conf->trans.i2c_spi);CDC_writeString(c_rn);
-
-           a_conf->crc = calc_cfg_crc(a_conf);
-            CDC_writeString(c_rn);
-            print_conf_hex(a_conf);
-            CDC_writeString(c_rn);
-           return true;
+            #include "cmd_print.inc"
         }
 
         cmd = strstr(a_buf, c_cmd_helpi2c);
